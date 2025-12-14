@@ -7,6 +7,7 @@ import { cloneRepo, analyzeRepo, RepoSummary } from './agents/repoAnalysis.js';
 import { matchInterfaces } from './agents/interfaceMatching.js';
 import { generateCode } from './agents/codeGeneration.js';
 import { generateIntegration } from './agents/integration.js';
+import { validateIntegration } from './agents/validation.js';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -108,6 +109,20 @@ app.post('/api/integrate', (req, res) => {
   }
   
   const result = generateIntegration(summaries);
+  res.json(result);
+});
+
+// Validate integration and generate report
+app.post('/api/validate', async (req, res) => {
+  const summaries = Array.from(repos.values())
+    .map(r => r.summary)
+    .filter((s): s is RepoSummary => !!s);
+  
+  if (summaries.length === 0) {
+    return res.status(400).json({ error: 'No analyzed repos. Run /api/analyze first.' });
+  }
+  
+  const result = await validateIntegration(summaries, '/tmp');
   res.json(result);
 });
 
