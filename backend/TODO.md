@@ -52,8 +52,8 @@
 - [x] Calculate estimated time saved
 
 ## Phase 7: API & Orchestration
-- [ ] Implement all REST endpoints
-- [ ] Build orchestrator to run agents in sequence
+- [x] Implement all REST endpoints
+- [x] Build orchestrator to run agents in sequence (/api/run-all)
 - [ ] Log each agent step
 - [ ] Stream progress to frontend
 

@@ -126,6 +126,47 @@ app.post('/api/validate', async (req, res) => {
   res.json(result);
 });
 
+// Run full pipeline: analyze -> match -> generate -> integrate -> validate
+app.post('/api/run-all', async (req, res) => {
+  const repoList = Array.from(repos.values());
+  if (repoList.length === 0) {
+    return res.status(400).json({ error: 'No repos added. Add repos first.' });
+  }
+
+  // Step 1: Analyze
+  for (const repo of repoList) {
+    const tempDir = await mkdtemp(join(tmpdir(), 'conect-'));
+    try {
+      await cloneRepo(repo.url, tempDir);
+      repo.summary = await analyzeRepo(tempDir, repo.url);
+    } finally {
+      await rm(tempDir, { recursive: true, force: true });
+    }
+  }
+
+  const summaries = repoList.map(r => r.summary).filter((s): s is RepoSummary => !!s);
+
+  // Step 2: Match
+  const matchResult = matchInterfaces(summaries);
+
+  // Step 3: Generate
+  const generated = await generateCode(summaries, matchResult);
+
+  // Step 4: Integrate
+  const integration = generateIntegration(summaries);
+
+  // Step 5: Validate
+  const validation = await validateIntegration(summaries, '/tmp');
+
+  res.json({
+    analysis: summaries,
+    matching: matchResult,
+    generated,
+    integration,
+    validation,
+  });
+});
+
 // Reset all
 app.post('/api/reset', (req, res) => {
   repos.clear();
