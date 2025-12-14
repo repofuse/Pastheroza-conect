@@ -2,6 +2,20 @@
 
 set -e
 
+# Parse arguments
+COMMIT_MSG=""
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        -m|--message)
+            COMMIT_MSG="$2"
+            shift 2
+            ;;
+        *)
+            shift
+            ;;
+    esac
+done
+
 # Load .env if exists
 if [[ -f .env ]]; then
     set -a
@@ -19,9 +33,15 @@ echo "=== Deploying to $REMOTE_HOST ==="
 
 # Check for uncommitted changes
 if [[ -n "$(git status --porcelain)" ]]; then
-    echo "Error: Uncommitted changes detected"
-    git status --short
-    exit 1
+    if [[ -n "$COMMIT_MSG" ]]; then
+        echo "Committing changes: $COMMIT_MSG"
+        git add -A
+        git commit -m "$COMMIT_MSG"
+    else
+        echo "Error: Uncommitted changes detected. Use -m to commit"
+        git status --short
+        exit 1
+    fi
 fi
 
 # Push to remote

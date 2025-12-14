@@ -5,12 +5,12 @@
 - [x] Create compose.yml
 - [x] Create deploy.sh
 - [x] Configure port 11000 on conect.api.hurated.com
-- [ ] Create Dockerfile
-- [ ] Initialize Node.js + TypeScript + Express project
+- [x] Create Dockerfile
+- [x] Initialize Node.js + TypeScript + Express project
 - [ ] Test deployment
 
 ## Phase 1: Core Setup
-- [ ] Set up Express server with CORS
+- [x] Set up Express server with CORS
 - [ ] Create agent base class/interface
 - [ ] Set up Git CLI integration for cloning
 
