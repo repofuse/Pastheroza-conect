@@ -72,11 +72,62 @@ Replace work typically done by a junior remote software engineer:
 - `POST /api/generate` — Run Code Generation Agent
 - `POST /api/integrate` — Run Integration Agent
 - `POST /api/validate` — Run Validation & Repair Agent
-- `POST /api/run-all` — Run full pipeline
+- `POST /api/run-all` — Run full pipeline (JSON response)
+- `GET /api/run-all/stream` — Run full pipeline with SSE streaming
 
 ### Status
 - `GET /api/status` — Current workflow status and logs
 - `GET /api/report` — Final integration report
+
+## SSE Streaming (Server-Sent Events)
+
+The `/api/run-all/stream` endpoint provides real-time progress updates.
+
+### Message Format
+```json
+{
+  "message": "Cloning repository...",
+  "type": "info",
+  "timestamp": "2025-12-14T22:00:00.000Z"
+}
+```
+
+### Message Types
+- `info` — Progress update (gray/white)
+- `success` — Step completed (green)
+- `warning` — Non-critical issue (yellow)
+- `error` — Critical error (red)
+
+### Frontend Usage (JavaScript)
+```javascript
+const eventSource = new EventSource('/api/run-all/stream');
+
+eventSource.onmessage = (event) => {
+  const { message, type, timestamp } = JSON.parse(event.data);
+  console.log(`[${type}] ${message}`);
+};
+
+eventSource.addEventListener('complete', (event) => {
+  const result = JSON.parse(event.data);
+  console.log('Pipeline complete:', result);
+  eventSource.close();
+});
+
+eventSource.onerror = () => {
+  eventSource.close();
+};
+```
+
+### Example Stream Output
+```
+data: {"message": "Connecting to repositories...", "type": "info"}
+data: {"message": "Cloning https://github.com/user/frontend...", "type": "info"}
+data: {"message": "Detected react framework", "type": "success"}
+data: {"message": "Warning: 3 API calls have no matching backend endpoint", "type": "warning"}
+data: {"message": "Pipeline complete in 2.5s", "type": "success"}
+event: complete
+data: {"analysis": [...], "metrics": {...}}
+```
 
 ## Setup
 

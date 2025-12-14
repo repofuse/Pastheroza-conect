@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { Response } from 'express';
 import cors from 'cors';
 import { mkdtemp, rm } from 'fs/promises';
 import { tmpdir } from 'os';
@@ -18,6 +18,12 @@ app.use(express.json());
 
 // In-memory storage
 const repos: Map<string, { url: string; summary?: RepoSummary }> = new Map();
+
+// SSE helper
+function sendSSE(res: Response, message: string, type: 'info' | 'success' | 'warning' | 'error' = 'info') {
+  const data = JSON.stringify({ message, type, timestamp: new Date().toISOString() });
+  res.write(`data: ${data}\n\n`);
+}
 
 // Health check
 app.get('/health', (req, res) => {
@@ -127,7 +133,106 @@ app.post('/api/validate', async (req, res) => {
   res.json(result);
 });
 
-// Run full pipeline: analyze -> match -> generate -> integrate -> validate
+// Run full pipeline with SSE streaming
+app.get('/api/run-all/stream', async (req, res) => {
+  const repoList = Array.from(repos.values());
+  if (repoList.length === 0) {
+    res.status(400).json({ error: 'No repos added. Add repos first.' });
+    return;
+  }
+
+  // Set SSE headers
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Connection', 'keep-alive');
+  res.flushHeaders();
+
+  const startTime = Date.now();
+
+  try {
+    // Step 1: Analyze
+    sendSSE(res, 'Connecting to repositories...', 'info');
+    
+    for (const repo of repoList) {
+      const tempDir = await mkdtemp(join(tmpdir(), 'conect-'));
+      try {
+        sendSSE(res, `Cloning ${repo.url}...`, 'info');
+        await cloneRepo(repo.url, tempDir);
+        
+        sendSSE(res, `Scanning package.json and dependencies...`, 'info');
+        repo.summary = await analyzeRepo(tempDir, repo.url);
+        
+        const framework = repo.summary.framework || 'unknown';
+        sendSSE(res, `Detected ${framework} framework in ${repo.url.split('/').pop()}`, 'success');
+      } catch (err: any) {
+        sendSSE(res, `Failed to analyze ${repo.url}: ${err.message}`, 'error');
+      } finally {
+        await rm(tempDir, { recursive: true, force: true });
+      }
+    }
+
+    const summaries = repoList.map(r => r.summary).filter((s): s is RepoSummary => !!s);
+    sendSSE(res, `Analysis complete. ${summaries.length} repositories scanned.`, 'success');
+
+    // Step 2: Match
+    sendSSE(res, 'Matching frontend API calls to backend routes...', 'info');
+    const matchResult = matchInterfaces(summaries);
+    
+    if (matchResult.missingInBackend.length > 0) {
+      sendSSE(res, `Warning: ${matchResult.missingInBackend.length} API calls have no matching backend endpoint`, 'warning');
+    }
+    if (matchResult.unusedInBackend.length > 0) {
+      sendSSE(res, `Found ${matchResult.unusedInBackend.length} unused backend endpoints`, 'info');
+    }
+    sendSSE(res, 'Interface matching complete.', 'success');
+
+    // Step 3: Generate
+    sendSSE(res, 'Generating API client for frontend...', 'info');
+    sendSSE(res, 'Configuring CORS policies...', 'info');
+    const generated = await generateCode(summaries, matchResult);
+    sendSSE(res, `Generated ${Object.keys(generated).length} code files.`, 'success');
+
+    // Step 4: Integrate
+    sendSSE(res, 'Generating docker-compose configuration...', 'info');
+    sendSSE(res, 'Creating environment files...', 'info');
+    const integration = generateIntegration(summaries);
+    sendSSE(res, `Integration strategy: ${integration.strategy}`, 'success');
+
+    // Step 5: Validate
+    sendSSE(res, 'Running validation checks...', 'info');
+    sendSSE(res, 'Checking dependencies and configurations...', 'info');
+    const validation = await validateIntegration(summaries, '/tmp');
+    
+    if (validation.errors.length > 0) {
+      for (const error of validation.errors) {
+        sendSSE(res, error, 'warning');
+      }
+    }
+
+    const totalDuration = Date.now() - startTime;
+    const metrics = calculateMetrics(summaries, matchResult, generated, integration, validation, totalDuration);
+
+    sendSSE(res, `Pipeline complete in ${(totalDuration / 1000).toFixed(1)}s`, 'success');
+    sendSSE(res, `Estimated time saved: ${metrics.timeSaved.total} hours ($${metrics.costSavings.totalSavings})`, 'success');
+
+    // Send final result
+    res.write(`event: complete\ndata: ${JSON.stringify({
+      analysis: summaries,
+      matching: matchResult,
+      generated,
+      integration,
+      validation,
+      metrics,
+    })}\n\n`);
+
+  } catch (err: any) {
+    sendSSE(res, `Pipeline failed: ${err.message}`, 'error');
+  }
+
+  res.end();
+});
+
+// Run full pipeline (non-streaming, for backwards compatibility)
 app.post('/api/run-all', async (req, res) => {
   const repoList = Array.from(repos.values());
   if (repoList.length === 0) {
