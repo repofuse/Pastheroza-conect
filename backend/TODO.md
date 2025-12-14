@@ -58,9 +58,10 @@
 - [ ] Stream progress to frontend
 
 ## Economic Utility Metrics
-- [ ] Track time saved vs manual integration
-- [ ] Count automated tasks (config, glue code, debugging)
-- [ ] Generate comparison report
+- [x] Track time saved vs manual integration
+- [x] Count automated tasks (config, glue code, debugging)
+- [x] Generate comparison report
+- [x] Calculate cost savings
 
 ## Example Scenario (MVP Demo)
 - [ ] React frontend + FastAPI backend integration

@@ -8,6 +8,7 @@ import { matchInterfaces } from './agents/interfaceMatching.js';
 import { generateCode } from './agents/codeGeneration.js';
 import { generateIntegration } from './agents/integration.js';
 import { validateIntegration } from './agents/validation.js';
+import { calculateMetrics } from './agents/metrics.js';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -178,6 +179,11 @@ app.post('/api/run-all', async (req, res) => {
   const totalDuration = Date.now() - startTime;
   log(`Pipeline complete in ${totalDuration}ms`);
 
+  // Calculate economic metrics
+  const metrics = calculateMetrics(
+    summaries, matchResult, generated, integration, validation, totalDuration
+  );
+
   res.json({
     logs,
     analysis: summaries,
@@ -185,6 +191,7 @@ app.post('/api/run-all', async (req, res) => {
     generated,
     integration,
     validation,
+    metrics,
   });
 });
 
