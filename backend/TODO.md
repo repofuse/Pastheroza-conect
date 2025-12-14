@@ -33,10 +33,10 @@
 - [ ] Generate integration contracts (schemas, DTOs)
 
 ## Phase 4: Code Generation Agent
-- [ ] Generate frontend API client (fetch/axios wrapper)
-- [ ] Generate backend CORS configuration
-- [ ] Generate shared type definitions
-- [ ] Apply minimal, safe code modifications
+- [x] Generate frontend API client (fetch/axios wrapper)
+- [x] Generate backend CORS configuration
+- [x] Generate shared type definitions
+- [x] Generate missing endpoint stubs
 
 ## Phase 5: Integration Agent
 - [ ] Choose strategy: monorepo vs docker-compose
