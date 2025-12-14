@@ -376,6 +376,18 @@ main() {
     
     run_post_test "Run Full Pipeline" "/api/run-all" '{}' 200 "metrics"
     
+    # Test SSE streaming endpoint
+    TESTS_RUN=$((TESTS_RUN + 1))
+    echo -e "\n${YELLOW}Test $TESTS_RUN: SSE Streaming Endpoint${RESET}"
+    local sse_response=$(curl -s -N "$API_URL/api/run-all/stream" 2>&1 | head -5)
+    if echo "$sse_response" | grep -q '"type":"info"'; then
+        echo -e "${GREEN}✓ PASSED${RESET}"
+        TESTS_PASSED=$((TESTS_PASSED + 1))
+    else
+        echo -e "${RED}✗ FAILED (No SSE data received)${RESET}"
+        TESTS_FAILED=$((TESTS_FAILED + 1))
+    fi
+    
     # Validate metrics in response
     TESTS_RUN=$((TESTS_RUN + 1))
     echo -e "\n${YELLOW}Test $TESTS_RUN: Metrics - Time Saved${RESET}"
