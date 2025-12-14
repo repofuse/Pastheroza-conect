@@ -135,6 +135,16 @@ export const swaggerSpec = {
         },
       },
     },
+    '/api/history': {
+      get: {
+        summary: 'Get git commit history',
+        tags: ['System'],
+        responses: {
+          200: { description: 'Git history for all repos', content: { 'application/json': { schema: { $ref: '#/components/schemas/HistoryResponse' } } } },
+          400: { description: 'No repos added', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
+        },
+      },
+    },
   },
   components: {
     schemas: {
@@ -142,9 +152,9 @@ export const swaggerSpec = {
       Error: { type: 'object', properties: { error: { type: 'string' } } },
       Success: { type: 'object', properties: { success: { type: 'boolean' } } },
       AddRepoRequest: { type: 'object', required: ['url'], properties: { url: { type: 'string', example: 'https://github.com/user/repo' } } },
-      AddRepoResponse: { type: 'object', properties: { id: { type: 'string' }, url: { type: 'string' } } },
+      AddRepoResponse: { type: 'object', properties: { id: { type: 'string' }, url: { type: 'string' }, addedAt: { type: 'string' } } },
       RepoList: { type: 'object', properties: { repos: { type: 'array', items: { $ref: '#/components/schemas/Repo' } } } },
-      Repo: { type: 'object', properties: { url: { type: 'string' }, summary: { $ref: '#/components/schemas/RepoSummary' } } },
+      Repo: { type: 'object', properties: { id: { type: 'string' }, url: { type: 'string' }, addedAt: { type: 'string' }, summary: { $ref: '#/components/schemas/RepoSummary' } } },
       RepoSummary: {
         type: 'object',
         properties: {
@@ -236,6 +246,30 @@ export const swaggerSpec = {
           message: { type: 'string' },
           type: { type: 'string', enum: ['info', 'success', 'warning', 'error'] },
           timestamp: { type: 'string' },
+        },
+      },
+      HistoryResponse: {
+        type: 'object',
+        properties: {
+          history: {
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {
+                repo: { type: 'string' },
+                commits: { type: 'array', items: { $ref: '#/components/schemas/Commit' } },
+              },
+            },
+          },
+        },
+      },
+      Commit: {
+        type: 'object',
+        properties: {
+          hash: { type: 'string' },
+          message: { type: 'string' },
+          date: { type: 'string' },
+          author: { type: 'string' },
         },
       },
     },

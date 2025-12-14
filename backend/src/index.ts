@@ -18,7 +18,13 @@ app.use(cors());
 app.use(express.json());
 
 // In-memory storage
-const repos: Map<string, { url: string; summary?: RepoSummary }> = new Map();
+interface StoredRepo {
+  id: string;
+  url: string;
+  addedAt: string;
+  summary?: RepoSummary;
+}
+const repos: Map<string, StoredRepo> = new Map();
 
 // SSE helper
 function sendSSE(res: Response, message: string, type: 'info' | 'success' | 'warning' | 'error' = 'info') {
@@ -60,8 +66,9 @@ app.post('/api/repos', (req, res) => {
   if (!url) return res.status(400).json({ error: 'url required' });
   
   const id = Buffer.from(url).toString('base64url');
-  repos.set(id, { url });
-  res.json({ id, url });
+  const addedAt = new Date().toISOString();
+  repos.set(id, { id, url, addedAt });
+  res.json({ id, url, addedAt });
 });
 
 // Remove repo
@@ -323,6 +330,36 @@ app.post('/api/run-all', async (req, res) => {
 app.post('/api/reset', (req, res) => {
   repos.clear();
   res.json({ success: true });
+});
+
+// Get git history for all repos
+app.get('/api/history', async (req, res) => {
+  const repoList = Array.from(repos.values());
+  if (repoList.length === 0) {
+    return res.status(400).json({ error: 'No repos added. Add repos first.' });
+  }
+
+  const history: { repo: string; commits: { hash: string; message: string; date: string; author: string }[] }[] = [];
+
+  for (const repo of repoList) {
+    const tempDir = await mkdtemp(join(tmpdir(), 'conect-'));
+    try {
+      await cloneRepo(repo.url, tempDir);
+      const { execSync } = await import('child_process');
+      const log = execSync('git log --oneline -10 --format="%H|%s|%ai|%an"', { cwd: tempDir, encoding: 'utf-8' });
+      const commits = log.trim().split('\n').filter(Boolean).map(line => {
+        const [hash, message, date, author] = line.split('|');
+        return { hash: hash.slice(0, 7), message, date, author };
+      });
+      history.push({ repo: repo.url, commits });
+    } catch (err: any) {
+      history.push({ repo: repo.url, commits: [], error: err.message } as any);
+    } finally {
+      await rm(tempDir, { recursive: true, force: true });
+    }
+  }
+
+  res.json({ history });
 });
 
 app.listen(PORT, () => {

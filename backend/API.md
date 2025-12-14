@@ -55,7 +55,8 @@ Content-Type: application/json
 ```json
 {
   "id": "aHR0cHM6Ly9naXRodWIuY29t...",
-  "url": "https://github.com/user/repo"
+  "url": "https://github.com/user/repo",
+  "addedAt": "2025-12-14T22:00:00.000Z"
 }
 ```
 
@@ -349,6 +350,42 @@ Clears all repositories and analysis data.
 ```json
 {
   "success": true
+}
+```
+
+---
+
+### History
+
+```
+GET /api/history
+```
+
+Gets git commit history for all added repositories.
+
+**Response** `200 OK`
+```json
+{
+  "history": [
+    {
+      "repo": "https://github.com/user/frontend",
+      "commits": [
+        {
+          "hash": "a1b2c3d",
+          "message": "Fix login bug",
+          "date": "2025-12-14 10:30:00 +0000",
+          "author": "John Doe"
+        }
+      ]
+    }
+  ]
+}
+```
+
+**Error** `400 Bad Request`
+```json
+{
+  "error": "No repos added. Add repos first."
 }
 ```
 

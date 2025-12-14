@@ -404,6 +404,9 @@ main() {
         TESTS_FAILED=$((TESTS_FAILED + 1))
     fi
     
+    # Test history endpoint (with repos)
+    run_test "History (with repos)" "/api/history" 200 "history"
+    
     # Validate metrics in response
     TESTS_RUN=$((TESTS_RUN + 1))
     echo -e "\n${YELLOW}Test $TESTS_RUN: Metrics - Time Saved${RESET}"
@@ -457,6 +460,9 @@ main() {
     run_post_test "Integrate (no repos)" "/api/integrate" '{}' 400 "error"
     run_post_test "Validate (no repos)" "/api/validate" '{}' 400 "error"
     run_post_test "Run-all (no repos)" "/api/run-all" '{}' 400 "error"
+    
+    # Test history endpoint (no repos)
+    run_test "History (no repos)" "/api/history" 400 "error"
     
     # ==========================================
     # Reset
