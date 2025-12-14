@@ -1,0 +1,10 @@
+services:
+  conect-backend:
+    build: .
+    ports:
+      - "${EXTERNAL_PORT}:${PORT}"
+    environment:
+      - NODE_ENV=production
+    env_file:
+      - .env
+    restart: unless-stopped

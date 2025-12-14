@@ -51,7 +51,7 @@ Replace work typically done by a junior remote software engineer:
 ### 4. Integration Agent
 - Decide strategy: monorepo or docker-compose
 - Generate: .env files, startup scripts, service wiring
-- Merge repositories into one project structure
+- Merge repositories into unified structure
 
 ### 5. Validation & Repair Agent
 - Run the integrated project
@@ -80,22 +80,47 @@ Replace work typically done by a junior remote software engineer:
 
 ## Setup
 
+### Local Development
+
 ```bash
 cd backend
+cp .env.example .env
+# Edit .env with your values
 npm install
 npm run dev
 ```
 
+### Deployment
+
+Deployed via Docker on `conect.api.hurated.com:11000`
+
+```bash
+./deploy.sh
+```
+
 ## Environment Variables
 
+See `.env.example`:
+
 ```
-GEMINI_API_KEY=your_api_key
-PORT=3001
+PORT=3000                              # Internal container port
+EXTERNAL_PORT=11000                    # External port on host
+GEMINI_API_KEY=your_gemini_api_key     # For AI-powered analysis
+REMOTE_HOST=conect.api.hurated.com     # Deployment server
+REMOTE_USER=your_username              # SSH user
+REMOTE_DIR=conect/backend              # Remote directory
 ```
+
+## Files
+
+- `compose.yml` — Docker Compose configuration
+- `deploy.sh` — Deployment script
+- `.env` — Environment variables (not in git)
+- `.env.example` — Example environment file (in git)
 
 ## Tech Stack
 
 - Node.js + TypeScript + Express
 - Google Gemini API (code analysis)
 - Git CLI (repo cloning)
-- Docker (optional, for validation)
+- Docker
