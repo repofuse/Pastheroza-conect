@@ -16,12 +16,12 @@
 - [ ] Set up Git CLI integration for cloning
 
 ## Phase 2: Repo Analysis Agent
-- [ ] Clone repos to temp directory
-- [ ] Detect language/framework (package.json, requirements.txt, etc.)
-- [ ] Find entry points (index.js, main.py, etc.)
-- [ ] Extract API routes (Express routes, FastAPI endpoints)
-- [ ] Parse config files and env vars
-- [ ] Output structured JSON summary
+- [x] Clone repos to temp directory
+- [x] Detect language/framework (package.json, requirements.txt, etc.)
+- [x] Find entry points (index.js, main.py, etc.)
+- [x] Extract API routes (Express routes, FastAPI endpoints)
+- [x] Parse config files and env vars
+- [x] Output structured JSON summary
 
 ## Phase 3: Interface Matching Agent
 - [ ] Parse frontend API calls (fetch, axios, etc.)
