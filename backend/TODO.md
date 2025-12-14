@@ -7,7 +7,8 @@
 - [x] Configure port 11000 on conect.api.hurated.com
 - [x] Create Dockerfile
 - [x] Initialize Node.js + TypeScript + Express project
-- [ ] Test deployment
+- [x] Test deployment
+- [x] Configure nginx + SSL for https://conect.api.hurated.com
 
 ## Phase 1: Core Setup
 - [x] Set up Express server with CORS
