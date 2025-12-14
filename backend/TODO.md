@@ -24,10 +24,10 @@
 - [x] Output structured JSON summary
 
 ## Phase 3: Interface Matching Agent
-- [ ] Parse frontend API calls (fetch, axios, etc.)
-- [ ] Parse backend route definitions
-- [ ] Match calls to routes
-- [ ] Detect mismatches:
+- [x] Parse frontend API calls (fetch, axios, etc.)
+- [x] Parse backend route definitions
+- [x] Match calls to routes
+- [x] Detect mismatches:
   - Frontend calls with no backend endpoint
   - Backend endpoints not used by frontend
 - [ ] Generate integration contracts (schemas, DTOs)

@@ -4,6 +4,7 @@ import { mkdtemp, rm } from 'fs/promises';
 import { tmpdir } from 'os';
 import { join } from 'path';
 import { cloneRepo, analyzeRepo, RepoSummary } from './agents/repoAnalysis.js';
+import { matchInterfaces } from './agents/interfaceMatching.js';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -63,6 +64,26 @@ app.post('/api/analyze', async (req, res) => {
   }
   
   res.json({ results });
+});
+
+// Match interfaces between frontend and backend
+app.post('/api/match', (req, res) => {
+  const summaries = Array.from(repos.values())
+    .map(r => r.summary)
+    .filter((s): s is RepoSummary => !!s);
+  
+  if (summaries.length === 0) {
+    return res.status(400).json({ error: 'No analyzed repos. Run /api/analyze first.' });
+  }
+  
+  const result = matchInterfaces(summaries);
+  res.json(result);
+});
+
+// Reset all
+app.post('/api/reset', (req, res) => {
+  repos.clear();
+  res.json({ success: true });
 });
 
 app.listen(PORT, () => {

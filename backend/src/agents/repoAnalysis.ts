@@ -5,12 +5,19 @@ import { join } from 'path';
 
 const execAsync = promisify(exec);
 
+export interface ApiCall {
+  method: string;
+  path: string;
+  file: string;
+}
+
 export interface RepoSummary {
   url: string;
   language: string | null;
   framework: string | null;
   entryPoints: string[];
   apiRoutes: string[];
+  apiCalls: ApiCall[];
   configFiles: string[];
   envVars: string[];
   dependencies: Record<string, string>;
@@ -27,6 +34,7 @@ export async function analyzeRepo(repoPath: string, url: string): Promise<RepoSu
     framework: null,
     entryPoints: [],
     apiRoutes: [],
+    apiCalls: [],
     configFiles: [],
     envVars: [],
     dependencies: {},
@@ -87,6 +95,9 @@ export async function analyzeRepo(repoPath: string, url: string): Promise<RepoSu
   // Extract API routes (basic pattern matching)
   summary.apiRoutes = await extractApiRoutes(repoPath, summary.framework);
 
+  // Extract frontend API calls
+  summary.apiCalls = await extractApiCalls(repoPath);
+
   return summary;
 }
 
@@ -145,4 +156,45 @@ async function fileExists(path: string): Promise<boolean> {
   } catch {
     return false;
   }
+}
+
+async function extractApiCalls(repoPath: string): Promise<ApiCall[]> {
+  const calls: ApiCall[] = [];
+  const srcPath = join(repoPath, 'src');
+  const searchPaths = [repoPath];
+  
+  if (await fileExists(srcPath)) searchPaths.push(srcPath);
+
+  for (const searchPath of searchPaths) {
+    const files = await findFiles(searchPath, ['.ts', '.tsx', '.js', '.jsx']);
+    
+    for (const file of files) {
+      const content = await readFile(file, 'utf-8');
+      const relativePath = file.replace(repoPath, '');
+      
+      // fetch() calls
+      const fetchMatches = content.matchAll(/fetch\s*\(\s*[`'"](\/[^`'"]*)[`'"]/g);
+      for (const match of fetchMatches) {
+        calls.push({ method: 'GET', path: match[1], file: relativePath });
+      }
+      
+      // axios calls
+      const axiosMethods = ['get', 'post', 'put', 'delete', 'patch'];
+      for (const method of axiosMethods) {
+        const regex = new RegExp(`axios\\.${method}\\s*\\(\\s*[\`'"](\/[^\`'"]*)[\`'"]`, 'g');
+        const matches = content.matchAll(regex);
+        for (const match of matches) {
+          calls.push({ method: method.toUpperCase(), path: match[1], file: relativePath });
+        }
+      }
+      
+      // Template literal API paths like `${API_URL}/users`
+      const templateMatches = content.matchAll(/\$\{[^}]*\}(\/[a-zA-Z0-9/_-]+)/g);
+      for (const match of templateMatches) {
+        calls.push({ method: 'GET', path: match[1], file: relativePath });
+      }
+    }
+  }
+
+  return calls;
 }
