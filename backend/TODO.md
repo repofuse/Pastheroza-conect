@@ -64,5 +64,6 @@
 - [x] Calculate cost savings
 
 ## Example Scenario (MVP Demo)
-- [ ] React frontend + FastAPI backend integration
-- [ ] Document success/failure criteria
+- [x] React frontend + Express backend integration
+- [x] Document success/failure criteria
+- [x] Create DEMO.md with step-by-step guide
