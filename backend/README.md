@@ -105,11 +105,13 @@ See `.env.example`:
 ```
 PORT=3000                              # Internal container port
 EXTERNAL_PORT=11000                    # External port on host
-GEMINI_API_KEY=your_gemini_api_key     # For AI-powered analysis
+GROQ_API_KEY=your_groq_api_key         # Groq API for Llama models (free)
 REMOTE_HOST=conect.api.hurated.com     # Deployment server
 REMOTE_USER=your_username              # SSH user
 REMOTE_DIR=conect/backend              # Remote directory
 ```
+
+Get free Groq API key at: https://console.groq.com
 
 ## Files
 
@@ -121,6 +123,6 @@ REMOTE_DIR=conect/backend              # Remote directory
 ## Tech Stack
 
 - Node.js + TypeScript + Express
-- Google Gemini API (code analysis)
+- Groq API + Llama 3.1 (open-source, code analysis)
 - Git CLI (repo cloning)
 - Docker
