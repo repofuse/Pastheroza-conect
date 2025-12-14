@@ -54,7 +54,7 @@
 ## Phase 7: API & Orchestration
 - [x] Implement all REST endpoints
 - [x] Build orchestrator to run agents in sequence (/api/run-all)
-- [ ] Log each agent step
+- [x] Log each agent step
 - [ ] Stream progress to frontend
 
 ## Economic Utility Metrics

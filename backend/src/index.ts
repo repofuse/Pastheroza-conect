@@ -133,12 +133,21 @@ app.post('/api/run-all', async (req, res) => {
     return res.status(400).json({ error: 'No repos added. Add repos first.' });
   }
 
+  const logs: { step: string; timestamp: string; duration?: number }[] = [];
+  const log = (step: string) => {
+    logs.push({ step, timestamp: new Date().toISOString() });
+  };
+
+  const startTime = Date.now();
+
   // Step 1: Analyze
+  log('Starting repo analysis...');
   for (const repo of repoList) {
     const tempDir = await mkdtemp(join(tmpdir(), 'conect-'));
     try {
       await cloneRepo(repo.url, tempDir);
       repo.summary = await analyzeRepo(tempDir, repo.url);
+      log(`Analyzed: ${repo.url}`);
     } finally {
       await rm(tempDir, { recursive: true, force: true });
     }
@@ -147,18 +156,30 @@ app.post('/api/run-all', async (req, res) => {
   const summaries = repoList.map(r => r.summary).filter((s): s is RepoSummary => !!s);
 
   // Step 2: Match
+  log('Matching interfaces...');
   const matchResult = matchInterfaces(summaries);
+  log(`Found ${matchResult.missingInBackend.length} missing endpoints`);
 
   // Step 3: Generate
+  log('Generating code...');
   const generated = await generateCode(summaries, matchResult);
+  log('Code generation complete');
 
   // Step 4: Integrate
+  log('Generating integration config...');
   const integration = generateIntegration(summaries);
+  log(`Strategy: ${integration.strategy}`);
 
   // Step 5: Validate
+  log('Validating integration...');
   const validation = await validateIntegration(summaries, '/tmp');
+  log(`Validation: ${validation.report.status}`);
+
+  const totalDuration = Date.now() - startTime;
+  log(`Pipeline complete in ${totalDuration}ms`);
 
   res.json({
+    logs,
     analysis: summaries,
     matching: matchResult,
     generated,
