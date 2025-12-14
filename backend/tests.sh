@@ -300,6 +300,22 @@ main() {
     run_test "Health Check" "/health" 200 "status"
     
     # ==========================================
+    # Swagger Documentation
+    # ==========================================
+    run_test "Swagger JSON" "/api/docs/swagger.json" 200 "openapi"
+    
+    TESTS_RUN=$((TESTS_RUN + 1))
+    echo -e "\n${YELLOW}Test $TESTS_RUN: Swagger UI${RESET}"
+    local swagger_response=$(curl -s "$API_URL/api/docs")
+    if echo "$swagger_response" | grep -q "swagger-ui"; then
+        echo -e "${GREEN}✓ PASSED${RESET}"
+        TESTS_PASSED=$((TESTS_PASSED + 1))
+    else
+        echo -e "${RED}✗ FAILED (Swagger UI not found)${RESET}"
+        TESTS_FAILED=$((TESTS_FAILED + 1))
+    fi
+    
+    # ==========================================
     # Repository Management
     # ==========================================
     run_test "List Repos (empty)" "/api/repos" 200 "repos"

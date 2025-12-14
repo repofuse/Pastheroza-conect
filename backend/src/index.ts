@@ -9,6 +9,7 @@ import { generateCode } from './agents/codeGeneration.js';
 import { generateIntegration } from './agents/integration.js';
 import { validateIntegration } from './agents/validation.js';
 import { calculateMetrics } from './agents/metrics.js';
+import { swaggerSpec } from './swagger.js';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -24,6 +25,24 @@ function sendSSE(res: Response, message: string, type: 'info' | 'success' | 'war
   const data = JSON.stringify({ message, type, timestamp: new Date().toISOString() });
   res.write(`data: ${data}\n\n`);
 }
+
+// Swagger JSON
+app.get('/api/docs/swagger.json', (req, res) => {
+  res.json(swaggerSpec);
+});
+
+// Swagger UI
+app.get('/api/docs', (req, res) => {
+  res.send(`<!DOCTYPE html>
+<html><head>
+  <title>conect API Docs</title>
+  <link rel="stylesheet" href="https://unpkg.com/swagger-ui-dist@5/swagger-ui.css">
+</head><body>
+  <div id="swagger-ui"></div>
+  <script src="https://unpkg.com/swagger-ui-dist@5/swagger-ui-bundle.js"></script>
+  <script>SwaggerUIBundle({ url: '/api/docs/swagger.json', dom_id: '#swagger-ui' });</script>
+</body></html>`);
+});
 
 // Health check
 app.get('/health', (req, res) => {
