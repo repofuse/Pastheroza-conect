@@ -39,10 +39,10 @@
 - [x] Generate missing endpoint stubs
 
 ## Phase 5: Integration Agent
-- [ ] Choose strategy: monorepo vs docker-compose
-- [ ] Generate .env files
-- [ ] Generate startup scripts (npm scripts, docker-compose.yml)
-- [ ] Merge repos into unified structure
+- [x] Choose strategy: monorepo vs docker-compose
+- [x] Generate .env files
+- [x] Generate startup scripts (npm scripts, docker-compose.yml)
+- [x] Generate project structure
 
 ## Phase 6: Validation & Repair Agent
 - [ ] Run integrated project (npm install, npm start)

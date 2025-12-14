@@ -6,6 +6,7 @@ import { join } from 'path';
 import { cloneRepo, analyzeRepo, RepoSummary } from './agents/repoAnalysis.js';
 import { matchInterfaces } from './agents/interfaceMatching.js';
 import { generateCode } from './agents/codeGeneration.js';
+import { generateIntegration } from './agents/integration.js';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -94,6 +95,20 @@ app.post('/api/generate', async (req, res) => {
   const matchResult = matchInterfaces(summaries);
   const generated = await generateCode(summaries, matchResult);
   res.json(generated);
+});
+
+// Generate integration config (docker-compose, env, scripts)
+app.post('/api/integrate', (req, res) => {
+  const summaries = Array.from(repos.values())
+    .map(r => r.summary)
+    .filter((s): s is RepoSummary => !!s);
+  
+  if (summaries.length === 0) {
+    return res.status(400).json({ error: 'No analyzed repos. Run /api/analyze first.' });
+  }
+  
+  const result = generateIntegration(summaries);
+  res.json(result);
 });
 
 // Reset all
