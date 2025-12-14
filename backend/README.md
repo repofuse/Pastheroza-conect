@@ -2,6 +2,8 @@
 
 AI-powered multi-agent system that performs real remote software engineering labor by automatically integrating multiple GitHub repositories into a working system.
 
+**Service Organization**: https://github.com/repofuse (forks and PRs are created here)
+
 ## Mission
 
 Replace work typically done by a junior remote software engineer:
