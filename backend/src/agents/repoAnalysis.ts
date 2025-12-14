@@ -52,6 +52,12 @@ export async function analyzeRepo(repoPath: string, url: string): Promise<RepoSu
       else if (reqs.includes('flask')) summary.framework = 'flask';
       else if (reqs.includes('django')) summary.framework = 'django';
     }
+    if (!summary.framework && files.includes('pyproject.toml')) {
+      const pyproj = await readFile(join(repoPath, 'pyproject.toml'), 'utf-8');
+      if (pyproj.includes('fastapi')) summary.framework = 'fastapi';
+      else if (pyproj.includes('flask')) summary.framework = 'flask';
+      else if (pyproj.includes('django')) summary.framework = 'django';
+    }
   }
 
   // Find entry points
