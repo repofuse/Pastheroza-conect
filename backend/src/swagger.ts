@@ -145,6 +145,18 @@ export const swaggerSpec = {
         },
       },
     },
+    '/api/apply': {
+      post: {
+        summary: 'Apply changes via fork + PR',
+        description: 'Forks repositories, commits generated code, and creates pull requests',
+        tags: ['Pipeline'],
+        responses: {
+          200: { description: 'Apply results with PR URLs', content: { 'application/json': { schema: { $ref: '#/components/schemas/ApplyResponse' } } } },
+          400: { description: 'No analyzed repos', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
+          500: { description: 'GitHub token not configured', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
+        },
+      },
+    },
   },
   components: {
     schemas: {
@@ -270,6 +282,23 @@ export const swaggerSpec = {
           message: { type: 'string' },
           date: { type: 'string' },
           author: { type: 'string' },
+        },
+      },
+      ApplyResponse: {
+        type: 'object',
+        properties: {
+          results: {
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {
+                repo: { type: 'string' },
+                forkUrl: { type: 'string' },
+                prUrl: { type: 'string' },
+                error: { type: 'string' },
+              },
+            },
+          },
         },
       },
     },

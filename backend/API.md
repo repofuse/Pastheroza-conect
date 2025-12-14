@@ -391,6 +391,48 @@ Gets git commit history for all added repositories.
 
 ---
 
+### Apply Changes (Fork + PR)
+
+```
+POST /api/apply
+```
+
+Forks repositories to the service org, commits generated code, and creates PRs.
+
+**Response** `200 OK`
+```json
+{
+  "results": [
+    {
+      "repo": "https://github.com/user/frontend",
+      "forkUrl": "https://github.com/repofuse/user-frontend",
+      "prUrl": "https://github.com/user/frontend/pull/123"
+    },
+    {
+      "repo": "https://github.com/user/backend",
+      "forkUrl": "https://github.com/repofuse/user-backend",
+      "prUrl": "https://github.com/user/backend/pull/45"
+    }
+  ]
+}
+```
+
+**Error** `400 Bad Request`
+```json
+{
+  "error": "No analyzed repos. Run /api/analyze first."
+}
+```
+
+**Error** `500 Internal Server Error`
+```json
+{
+  "error": "GITHUB_TOKEN not configured"
+}
+```
+
+---
+
 ## Swagger Documentation
 
 ```
